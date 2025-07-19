@@ -6,20 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { TrendingUp, TrendingDown, Activity, Loader2, CheckCircle, XCircle, AlertCircle } from "lucide-react"
 
-// Simple hardcoded data that will definitely work
-const HARDCODED_DATA = [
-  { date: "2024-01-15", close: 24000, open: 23950, high: 24100, low: 23900, volume: 1000000 },
-  { date: "2024-01-16", close: 24150, open: 24000, high: 24200, low: 23980, volume: 1100000 },
-  { date: "2024-01-17", close: 24080, open: 24150, high: 24180, low: 24000, volume: 950000 },
-  { date: "2024-01-18", close: 24250, open: 24080, high: 24300, low: 24050, volume: 1200000 },
-  { date: "2024-01-19", close: 24180, open: 24250, high: 24280, low: 24120, volume: 980000 },
-  { date: "2024-01-22", close: 24320, open: 24180, high: 24350, low: 24150, volume: 1050000 },
-  { date: "2024-01-23", close: 24280, open: 24320, high: 24340, low: 24200, volume: 1150000 },
-  { date: "2024-01-24", close: 24400, open: 24280, high: 24450, low: 24250, volume: 1300000 },
-  { date: "2024-01-25", close: 24350, open: 24400, high: 24420, low: 24300, volume: 1080000 },
-  { date: "2024-01-26", close: 24500, open: 24350, high: 24550, low: 24320, volume: 1250000 },
-]
-
 interface StockData {
   date: string
   close: number
@@ -52,7 +38,7 @@ const timeRanges = [
 
 export default function Component() {
   const [selectedRange, setSelectedRange] = useState("3M")
-  const [stockData, setStockData] = useState<StockData[]>(HARDCODED_DATA)
+  const [stockData, setStockData] = useState<StockData[]>([])
   const [prediction, setPrediction] = useState<number | null>(null)
   const [features, setFeatures] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
@@ -193,7 +179,7 @@ export default function Component() {
             volume: Math.round(quotes.volume[index] || 0),
           }
         })
-        .filter((item): item is StockData => item !== null)
+        .filter((item: StockData | null): item is StockData => item !== null)
 
       if (formattedData.length > 0) {
         addLog("/api/yfinance", "success", `Successfully formatted ${formattedData.length} data points`, {
@@ -378,93 +364,6 @@ export default function Component() {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* API Status Dashboard */}
-        <Card className="border-l-4 border-l-blue-500">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="w-5 h-5" />
-              API Status Dashboard
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div className="bg-gray-50 p-3 rounded">
-                <div className="text-sm font-medium text-gray-600">Stock Data API</div>
-                <div
-                  className={`flex items-center gap-2 mt-1 ${dataSource === "api" ? "text-green-600" : "text-yellow-600"}`}
-                >
-                  {dataSource === "api" ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-                  <span className="text-sm">{dataSource === "api" ? "Live Data" : "Mock Data"}</span>
-                </div>
-              </div>
-              <div className="bg-gray-50 p-3 rounded">
-                <div className="text-sm font-medium text-gray-600">Features API</div>
-                <div
-                  className={`flex items-center gap-2 mt-1 ${features.length > 0 ? "text-green-600" : "text-red-600"}`}
-                >
-                  {features.length > 0 ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-                  <span className="text-sm">{features.length} features loaded</span>
-                </div>
-              </div>
-              <div className="bg-gray-50 p-3 rounded">
-                <div className="text-sm font-medium text-gray-600">Prediction API</div>
-                <div
-                  className={`flex items-center gap-2 mt-1 ${prediction ? "text-green-600" : predictionLoading ? "text-yellow-600" : "text-gray-600"}`}
-                >
-                  {prediction ? (
-                    <CheckCircle className="w-4 h-4" />
-                  ) : predictionLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <AlertCircle className="w-4 h-4" />
-                  )}
-                  <span className="text-sm">
-                    {prediction ? "Prediction Ready" : predictionLoading ? "Loading..." : "Waiting"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* API Logs */}
-            <div className="border-t pt-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Recent API Calls</h4>
-              <div className="space-y-2 max-h-40 overflow-y-auto">
-                {apiLogs.map((log, index) => (
-                  <div key={index} className="text-xs bg-white p-2 rounded border-l-2 border-l-gray-300">
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-500">{log.timestamp}</span>
-                      <span className="font-mono text-blue-600">{log.endpoint}</span>
-                      <span
-                        className={`px-2 py-1 rounded text-xs ${
-                          log.status === "success"
-                            ? "bg-green-100 text-green-800"
-                            : log.status === "error"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-yellow-100 text-yellow-800"
-                        }`}
-                      >
-                        {log.status}
-                      </span>
-                    </div>
-                    <div className="text-gray-700 mt-1">{log.message}</div>
-                    {log.data && (
-                      <details className="mt-1">
-                        <summary className="text-gray-500 cursor-pointer">Data</summary>
-                        <pre className="text-xs bg-gray-50 p-1 rounded mt-1 overflow-auto">
-                          {JSON.stringify(log.data, null, 2)}
-                        </pre>
-                      </details>
-                    )}
-                    {log.error && (
-                      <div className="text-red-600 text-xs mt-1 bg-red-50 p-1 rounded">Error: {log.error}</div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Header */}
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <div className="flex items-center justify-between">
@@ -496,21 +395,39 @@ export default function Component() {
           </div>
         </div>
 
-        {/* Simple Test Chart */}
-        <Card>
+        {/* Prediction Section */}
+        <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Simple Test Chart (Hardcoded Data)</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="w-5 h-5" />
+              Tomorrow's Prediction
+              {predictionLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={HARDCODED_DATA}>
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Line type="monotone" dataKey="close" stroke="#8884d8" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            {prediction ? (
+              <div className="text-center">
+                <p className="text-sm text-gray-500 mb-2">Predicted Price</p>
+                <p className="text-3xl font-bold text-gray-900">₹{prediction.toLocaleString()}</p>
+                <p className={`text-lg font-medium mt-2 ${predictionChange >= 0 ? "text-green-600" : "text-red-600"}`}>
+                  {predictionChange >= 0 ? "+" : ""}
+                  {predictionChange.toFixed(2)} ({predictionChangePercent}%)
+                </p>
+                <div
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mt-4 ${
+                    predictionChange >= 0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                  }`}
+                >
+                  {predictionChange >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                  {predictionChange >= 0 ? "BULLISH" : "BEARISH"}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center text-gray-500">
+                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
+                <p>Getting prediction...</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -579,42 +496,6 @@ export default function Component() {
                     Reload Data
                   </Button>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Prediction Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="w-5 h-5" />
-              Tomorrow's Prediction
-              {predictionLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {prediction ? (
-              <div className="text-center">
-                <p className="text-sm text-gray-500 mb-2">Predicted Price</p>
-                <p className="text-3xl font-bold text-gray-900">₹{prediction.toLocaleString()}</p>
-                <p className={`text-lg font-medium mt-2 ${predictionChange >= 0 ? "text-green-600" : "text-red-600"}`}>
-                  {predictionChange >= 0 ? "+" : ""}
-                  {predictionChange.toFixed(2)} ({predictionChangePercent}%)
-                </p>
-                <div
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mt-4 ${
-                    predictionChange >= 0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {predictionChange >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                  {predictionChange >= 0 ? "BULLISH" : "BEARISH"}
-                </div>
-              </div>
-            ) : (
-              <div className="text-center text-gray-500">
-                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-                <p>Getting prediction...</p>
               </div>
             )}
           </CardContent>
