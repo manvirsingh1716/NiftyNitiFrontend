@@ -103,7 +103,7 @@ export default function Component() {
       }
 
       const result = data.chart.result[0]
-      const timestamps = result.timestamp
+      const timestamps = result.timestamp || []
       const quotes = result.indicators.quote[0]
 
       if (!timestamps || !quotes) {
@@ -112,25 +112,27 @@ export default function Component() {
 
       const formattedData: StockData[] = timestamps
         .map((timestamp: number, index: number) => {
-          const close = quotes.close[index]
+          const close = quotes.close?.[index]
           if (!close || close <= 0) return null
 
           return {
-            date: new Date(timestamp * 1000).toISOString().split("T")[0],
+            date: new Date(timestamp * 1000).toISOString().split('T')[0],
             close: Math.round(close),
-            open: Math.round(quotes.open[index] || close),
-            high: Math.round(quotes.high[index] || close),
-            low: Math.round(quotes.low[index] || close),
-            volume: Math.round(quotes.volume[index] || 0),
+            open: Math.round(quotes.open?.[index] || close),
+            high: Math.round(quotes.high?.[index] || close),
+            low: Math.round(quotes.low?.[index] || close),
+            volume: Math.round(quotes.volume?.[index] || 0),
           }
         })
         .filter((item: StockData | null): item is StockData => item !== null)
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error"
 
+      setStockData(formattedData)
+      setDataSource('api')
+    } catch (error) {
+      console.error('Error fetching stock data:', error)
       const mockData = generateMockData(days)
       setStockData(mockData)
-      setDataSource("mock")
+      setDataSource('mock')
     } finally {
       setLoading(false)
     }
