@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { TrendingUp, TrendingDown, Activity, Loader2, CheckCircle, XCircle, AlertCircle } from "lucide-react"
+import { TrendingUp, TrendingDown, Activity, Loader2 } from "lucide-react"
 
 interface StockData {
   date: string
@@ -20,16 +20,8 @@ interface PredictionData {
   error?: string
 }
 
-interface ApiLog {
-  timestamp: string
-  endpoint: string
-  status: "success" | "error" | "loading"
-  message: string
-  data?: any
-  error?: string
-}
-
 const timeRanges = [
+  { label: "1D", days: 1 },
   { label: "1M", days: 30 },
   { label: "3M", days: 90 },
   { label: "6M", days: 180 },
@@ -44,31 +36,10 @@ export default function Component() {
   const [loading, setLoading] = useState(false)
   const [predictionLoading, setPredictionLoading] = useState(false)
   const [dataSource, setDataSource] = useState<"api" | "mock">("mock")
-  const [apiLogs, setApiLogs] = useState<ApiLog[]>([])
 
-  // Add log entry
-  const addLog = (
-    endpoint: string,
-    status: "success" | "error" | "loading",
-    message: string,
-    data?: any,
-    error?: string,
-  ) => {
-    const log: ApiLog = {
-      timestamp: new Date().toLocaleTimeString(),
-      endpoint,
-      status,
-      message,
-      data,
-      error,
-    }
-    setApiLogs((prev) => [log, ...prev.slice(0, 9)]) // Keep last 10 logs
-    console.log(`[API LOG] ${endpoint}: ${message}`, data || error || "")
-  }
 
   // Generate more realistic mock data
   const generateMockData = (days: number): StockData[] => {
-    addLog("generateMockData", "loading", `Generating ${days} days of mock data`)
 
     const data: StockData[] = []
     let basePrice = 24400
@@ -100,12 +71,6 @@ export default function Component() {
       basePrice = close
     }
 
-    addLog("generateMockData", "success", `Generated ${data.length} data points`, {
-      firstPoint: data[0],
-      lastPoint: data[data.length - 1],
-      totalPoints: data.length,
-    })
-
     return data
   }
 
@@ -113,38 +78,25 @@ export default function Component() {
   const fetchStockData = async (days: number) => {
     try {
       setLoading(true)
-      addLog("/api/yfinance", "loading", `Fetching ${days} days of NIFTY data`)
 
       const endDate = new Date()
       const startDate = new Date()
       startDate.setDate(startDate.getDate() - days)
 
+      // For 1 day, we need to use a smaller interval (1h) to get intraday data
+      const interval = days === 1 ? '1h' : '1d';
+      
       const url = `/api/yfinance?symbol=%5ENSEI&period1=${Math.floor(
         startDate.getTime() / 1000,
-      )}&period2=${Math.floor(endDate.getTime() / 1000)}&interval=1d`
-
-      addLog("/api/yfinance", "loading", `Making request to: ${url}`)
+      )}&period2=${Math.floor(endDate.getTime() / 1000)}&interval=${interval}`
 
       const response = await fetch(url)
-
-      addLog(
-        "/api/yfinance",
-        response.ok ? "success" : "error",
-        `Response status: ${response.status} ${response.statusText}`,
-      )
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const data = await response.json()
-
-      addLog("/api/yfinance", "success", "Raw API response received", {
-        hasChart: !!data.chart,
-        hasResult: !!data.chart?.result,
-        resultLength: data.chart?.result?.length || 0,
-        firstResult: data.chart?.result?.[0] ? "exists" : "missing",
-      })
 
       if (data.error || !data.chart?.result?.[0]) {
         throw new Error("Invalid data structure")
@@ -153,13 +105,6 @@ export default function Component() {
       const result = data.chart.result[0]
       const timestamps = result.timestamp
       const quotes = result.indicators.quote[0]
-
-      addLog("/api/yfinance", "success", "Parsing data structure", {
-        timestampsLength: timestamps?.length || 0,
-        quotesKeys: quotes ? Object.keys(quotes) : [],
-        sampleTimestamp: timestamps?.[0],
-        sampleClose: quotes?.close?.[0],
-      })
 
       if (!timestamps || !quotes) {
         throw new Error("Missing timestamps or quotes data")
@@ -180,24 +125,8 @@ export default function Component() {
           }
         })
         .filter((item: StockData | null): item is StockData => item !== null)
-
-      if (formattedData.length > 0) {
-        addLog("/api/yfinance", "success", `Successfully formatted ${formattedData.length} data points`, {
-          firstPoint: formattedData[0],
-          lastPoint: formattedData[formattedData.length - 1],
-          priceRange: {
-            min: Math.min(...formattedData.map((d) => d.close)),
-            max: Math.max(...formattedData.map((d) => d.close)),
-          },
-        })
-        setStockData(formattedData)
-        setDataSource("api")
-      } else {
-        throw new Error("No valid data points after formatting")
-      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error"
-      addLog("/api/yfinance", "error", `API failed: ${errorMessage}`, null, errorMessage)
 
       const mockData = generateMockData(days)
       setStockData(mockData)
@@ -210,34 +139,23 @@ export default function Component() {
   // Fetch features from backend
   const fetchFeatures = async () => {
     try {
-      addLog("/features", "loading", "Fetching ML features")
-
       const response = await fetch("https://niftyniti.onrender.com/features")
-
-      addLog("/features", response.ok ? "success" : "error", `Features API response: ${response.status}`)
 
       const data = await response.json()
       const featureNames = data.features.map((feature: [string, string]) => feature[0])
 
-      addLog("/features", "success", `Received ${featureNames.length} features`, {
-        features: featureNames,
-      })
-
       setFeatures(featureNames)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error"
-      addLog("/features", "error", `Features fetch failed: ${errorMessage}`, null, errorMessage)
 
       const fallbackFeatures = ["Prev_Close", "5MA", "10MA", "Return"]
       setFeatures(fallbackFeatures)
-      addLog("/features", "success", "Using fallback features", { features: fallbackFeatures })
     }
   }
 
   // Calculate features from stock data
   const calculateFeatures = (data: StockData[]) => {
     if (data.length < 10) {
-      addLog("calculateFeatures", "error", `Insufficient data: ${data.length} points (need 10+)`)
       return {}
     }
 
@@ -256,25 +174,21 @@ export default function Component() {
       Return: Number.parseFloat(returnValue.toFixed(4)),
     }
 
-    addLog("calculateFeatures", "success", "Features calculated", calculatedFeatures)
     return calculatedFeatures
   }
 
   // Get prediction from backend
   const getPrediction = async () => {
     if (stockData.length === 0 || features.length === 0) {
-      addLog("/predict", "error", `Cannot predict: stockData=${stockData.length}, features=${features.length}`)
       return
     }
 
     try {
       setPredictionLoading(true)
-      addLog("/predict", "loading", "Calculating features and requesting prediction")
 
       const calculatedFeatures = calculateFeatures(stockData)
 
       if (Object.keys(calculatedFeatures).length === 0) {
-        addLog("/predict", "error", "No features calculated, skipping prediction")
         return
       }
 
@@ -286,23 +200,15 @@ export default function Component() {
         body: JSON.stringify(calculatedFeatures),
       })
 
-      addLog("/predict", response.ok ? "success" : "error", `Prediction API response: ${response.status}`)
-
       const data: PredictionData = await response.json()
 
       if (data.error) {
-        addLog("/predict", "error", `Prediction error: ${data.error}`, null, data.error)
+        throw new Error(data.error)
       } else {
-        addLog("/predict", "success", `Prediction received: ₹${data.prediction}`, {
-          prediction: data.prediction,
-          currentPrice: stockData[stockData.length - 1]?.close,
-          change: data.prediction - (stockData[stockData.length - 1]?.close || 0),
-        })
         setPrediction(data.prediction)
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error"
-      addLog("/predict", "error", `Prediction failed: ${errorMessage}`, null, errorMessage)
     } finally {
       setPredictionLoading(false)
     }
@@ -310,7 +216,6 @@ export default function Component() {
 
   // Initialize
   useEffect(() => {
-    addLog("init", "loading", "Component mounted, initializing...")
     fetchFeatures()
   }, [])
 
@@ -318,7 +223,6 @@ export default function Component() {
   useEffect(() => {
     const range = timeRanges.find((r) => r.label === selectedRange)
     if (range) {
-      addLog("rangeChange", "loading", `Range changed to ${selectedRange} (${range.days} days)`)
       fetchStockData(range.days)
     }
   }, [selectedRange])
@@ -326,11 +230,6 @@ export default function Component() {
   // Get prediction when data is ready
   useEffect(() => {
     if (stockData.length > 0 && features.length > 0) {
-      addLog(
-        "predictionTrigger",
-        "loading",
-        `Triggering prediction: ${stockData.length} data points, ${features.length} features`,
-      )
       getPrediction()
     }
   }, [stockData, features])
