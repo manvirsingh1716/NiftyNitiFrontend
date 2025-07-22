@@ -164,16 +164,40 @@ export default function Component() {
     const closes = data.map((d) => d.close)
     const latest = data[data.length - 1]
     const previous = data[data.length - 2]
+    const fiveDaysAgo = data.length >= 5 ? data[data.length - 6] : null
 
+    // Calculate basic moving averages
     const ma5 = closes.slice(-5).reduce((a, b) => a + b, 0) / 5
     const ma10 = closes.slice(-10).reduce((a, b) => a + b, 0) / 10
     const returnValue = previous ? (latest.close - previous.close) / previous.close : 0
+
+    // Calculate additional features
+    // 5-day volatility (standard deviation)
+    const recentCloses = closes.slice(-5)
+    const mean = recentCloses.reduce((a, b) => a + b, 0) / recentCloses.length
+    const variance = recentCloses.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / recentCloses.length
+    const volatility5D = Math.sqrt(variance)
+
+    // 5-day momentum
+    const momentum5D = fiveDaysAgo ? latest.close - fiveDaysAgo.close : 0
+
+    // Rolling max/min for 10 days
+    const last10Closes = closes.slice(-10)
+    const rollingMax10 = Math.max(...last10Closes)
+    const rollingMin10 = Math.min(...last10Closes)
 
     const calculatedFeatures = {
       Prev_Close: previous?.close || latest.close,
       "5MA": Number.parseFloat(ma5.toFixed(2)),
       "10MA": Number.parseFloat(ma10.toFixed(2)),
       Return: Number.parseFloat(returnValue.toFixed(4)),
+      Volatility_5D: Number.parseFloat(volatility5D.toFixed(2)),
+      Momentum_5D: Number.parseFloat(momentum5D.toFixed(2)),
+      MA5_to_MA10: Number.parseFloat((ma5 / ma10).toFixed(4)),
+      Price_Range: Number.parseFloat((latest.high - latest.low).toFixed(2)),
+      Open_Close_Change: Number.parseFloat((latest.close - latest.open).toFixed(2)),
+      Rolling_Max_10: Number.parseFloat(rollingMax10.toFixed(2)),
+      Rolling_Min_10: Number.parseFloat(rollingMin10.toFixed(2)),
     }
 
     return calculatedFeatures
