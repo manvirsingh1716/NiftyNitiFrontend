@@ -36,7 +36,7 @@ export default function Component() {
   const [loading, setLoading] = useState(false)
   const [predictionLoading, setPredictionLoading] = useState(false)
   const [dataSource, setDataSource] = useState<"api" | "mock">("mock")
-
+  const [yAxisDomain, setYAxisDomain] = useState<[number, number] | undefined>(undefined)
 
   // Generate more realistic mock data
   const generateMockData = (days: number): StockData[] => {
@@ -286,6 +286,26 @@ export default function Component() {
     return null
   }
 
+  const zoomIn = () => {
+    if (!stockData.length) return;
+    
+    const closes = stockData.map(d => d.close);
+    const min = Math.min(...closes);
+    const max = Math.max(...closes);
+    const range = max - min;
+    const padding = range * 0.1; // 10% padding
+    
+    setYAxisDomain([min - padding, max + padding]);
+  };
+
+  const zoomOut = () => {
+    setYAxisDomain(undefined); // Reset to auto scale
+  };
+
+  const zoomToRange = (min: number, max: number) => {
+    setYAxisDomain([min, max]);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -361,18 +381,40 @@ export default function Component() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Price Chart ({stockData.length} points)</CardTitle>
-              <div className="flex gap-1">
-                {timeRanges.map((range) => (
-                  <Button
-                    key={range.label}
-                    variant={selectedRange === range.label ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedRange(range.label)}
-                    className={selectedRange === range.label ? "bg-blue-600 hover:bg-blue-700" : ""}
-                  >
-                    {range.label}
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1 mr-2 border-r pr-2">
+                  <Button variant="outline" size="sm" onClick={zoomIn}>
+                    Zoom In
                   </Button>
-                ))}
+                  <Button variant="outline" size="sm" onClick={zoomOut}>
+                    Reset Zoom
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => {
+                      if (!stockData.length) return;
+                      const closes = stockData.map(d => d.close);
+                      const current = closes[closes.length - 1];
+                      zoomToRange(current * 0.9, current * 1.1);
+                    }}
+                  >
+                    ±10%
+                  </Button>
+                </div>
+                <div className="flex gap-1">
+                  {timeRanges.map((range) => (
+                    <Button
+                      key={range.label}
+                      variant={selectedRange === range.label ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedRange(range.label)}
+                      className={selectedRange === range.label ? "bg-blue-600 hover:bg-blue-700" : ""}
+                    >
+                      {range.label}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </div>
           </CardHeader>
@@ -399,7 +441,12 @@ export default function Component() {
                         }
                       }}
                     />
-                    <YAxis stroke="#666" fontSize={12} tickFormatter={(value) => `₹${Math.round(value / 1000)}K`} />
+                    <YAxis 
+                      stroke="#666" 
+                      fontSize={12} 
+                      tickFormatter={(value) => `₹${Math.round(value / 1000)}K`}
+                      domain={yAxisDomain}
+                    />
                     <Tooltip content={<CustomTooltip />} />
                     <Line
                       type="monotone"
