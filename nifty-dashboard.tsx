@@ -5,6 +5,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { TrendingUp, TrendingDown, Activity, Loader2 } from "lucide-react"
+import { savePrediction } from "@/lib/predictionService"
 
 interface StockData {
   date: string
@@ -232,9 +233,52 @@ export default function Component() {
         throw new Error(data.error)
       } else {
         setPrediction(data.prediction)
+        
+        // Save the prediction to our database
+        try {
+          const responsew = await fetch("https://niftyniti.onrender.com/weights", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+          const weights = await responsew.json()
+          const calculatedWeights = {
+            Prev_Close: weights.weights[0],
+            "5MA": weights.weights[1],
+            "10MA": weights.weights[2],
+            Return: weights.weights[3],
+            Volatility_5D: weights.weights[4],
+            Momentum_5D: weights.weights[5],
+            MA5_to_MA10: weights.weights[6],
+            Price_Range: weights.weights[7],
+            Open_Close_Change: weights.weights[8],
+            Rolling_Max_10: weights.weights[9],
+            Rolling_Min_10: weights.weights[10],
+            intercept: weights.intercept,
+          }
+
+          const tomorrow = new Date()
+          tomorrow.setDate(tomorrow.getDate() + 1)
+          // Reset time to midnight to ensure we only use the date part
+          tomorrow.setHours(0, 0, 0, 0)
+          
+          await savePrediction({
+            date: tomorrow,
+            start: data.prediction,
+            close: data.prediction,
+            weights: calculatedWeights, // Storing the features used for prediction
+          })
+          
+
+        } catch (dbError) {
+          console.error('Error saving prediction to database:', dbError)
+          // Don't fail the whole prediction if saving to DB fails
+        }
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error"
+      console.error('Prediction error:', errorMessage)
     } finally {
       setPredictionLoading(false)
     }

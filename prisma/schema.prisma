@@ -1,0 +1,25 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://neondb_owner:npg_WKDbxgI5OH3F@ep-super-mouse-adxktucb-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+}
+
+model Prediction {
+  id        String   @id @default(uuid())
+  date      DateTime @unique
+  high      Float
+  low       Float
+  start     Float
+  close     Float
+  weights   Json     // Store feature weights as JSON
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+}
