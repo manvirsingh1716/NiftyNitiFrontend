@@ -423,19 +423,31 @@ export default function Component() {
         {/* Main Chart */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Price Chart ({stockData.length} points)</CardTitle>
-              <div className="flex items-center gap-2">
-                <div className="flex gap-1 mr-2 border-r pr-2">
-                  <Button variant="outline" size="sm" onClick={zoomIn}>
-                    Zoom In
+            <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
+              <CardTitle className="text-lg sm:text-xl">Price Chart ({stockData.length} points)</CardTitle>
+              <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:space-x-2">
+                <div className="flex flex-wrap gap-1 sm:flex-nowrap sm:mr-2 sm:border-r sm:pr-2">
+                  <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={zoomIn}>
+                    <span className="sr-only">Zoom In</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                      <line x1="11" y1="8" x2="11" y2="14"></line>
+                      <line x1="8" y1="11" x2="14" y2="11"></line>
+                    </svg>
                   </Button>
-                  <Button variant="outline" size="sm" onClick={zoomOut}>
-                    Reset Zoom
+                  <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={zoomOut}>
+                    <span className="sr-only">Reset Zoom</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                      <line x1="8" y1="11" x2="14" y2="11"></line>
+                    </svg>
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 
+                    className="flex-1 sm:flex-none"
                     onClick={() => {
                       if (!stockData.length) return;
                       const closes = stockData.map(d => d.close);
@@ -446,14 +458,14 @@ export default function Component() {
                     ±10%
                   </Button>
                 </div>
-                <div className="flex gap-1">
+                <div className="flex flex-wrap gap-1 sm:flex-nowrap">
                   {timeRanges.map((range) => (
                     <Button
                       key={range.label}
                       variant={selectedRange === range.label ? "default" : "outline"}
                       size="sm"
+                      className={`flex-1 sm:flex-none ${selectedRange === range.label ? "bg-blue-600 hover:bg-blue-700" : ""}`}
                       onClick={() => setSelectedRange(range.label)}
-                      className={selectedRange === range.label ? "bg-blue-600 hover:bg-blue-700" : ""}
                     >
                       {range.label}
                     </Button>
@@ -462,53 +474,86 @@ export default function Component() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-2 sm:p-6">
             {loading ? (
-              <div className="h-96 flex items-center justify-center">
+              <div className="h-64 sm:h-96 flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin" />
               </div>
             ) : stockData && stockData.length > 0 ? (
-              <div className="h-96">
+              <div className="h-64 sm:h-96 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={stockData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <LineChart 
+                    data={stockData} 
+                    margin={{ top: 10, right: 10, left: 0, bottom: 10 }}
+                    className="touch-pan-x"
+                  >
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis
                       dataKey="date"
                       stroke="#666"
-                      fontSize={12}
+                      fontSize={10}
+                      tickMargin={8}
+                      minTickGap={30}
+                      interval="preserveStartEnd"
                       tickFormatter={(value) => {
                         try {
-                          const date = new Date(value)
-                          return date.toLocaleDateString([], { month: "short", day: "numeric" })
+                          const date = new Date(value);
+                          // For mobile, show shorter format
+                          if (window.innerWidth < 640) {
+                            return date.getDate() + '/' + (date.getMonth() + 1);
+                          }
+                          return date.toLocaleDateString([], { month: "short", day: "numeric" });
                         } catch {
-                          return value
+                          return value;
                         }
                       }}
                     />
                     <YAxis 
                       stroke="#666" 
-                      fontSize={12} 
-                      tickFormatter={(value) => `₹${Math.round(value / 1000)}K`}
+                      fontSize={10}
+                      width={40}
+                      tickFormatter={(value) => {
+                        const num = Math.round(value / 1000);
+                        return num + 'K';
+                      }}
                       domain={yAxisDomain}
+                      tickCount={6}
                     />
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip 
+                      content={<CustomTooltip />}
+                      wrapperStyle={{
+                        zIndex: 1000,
+                        pointerEvents: 'auto'
+                      }}
+                    />
                     <Line
                       type="monotone"
                       dataKey="close"
                       stroke="#2563eb"
                       strokeWidth={2}
                       dot={false}
-                      activeDot={{ r: 6, fill: "#2563eb" }}
+                      activeDot={{ 
+                        r: 6, 
+                        fill: "#2563eb",
+                        stroke: '#fff',
+                        strokeWidth: 2,
+                        style: { filter: 'drop-shadow(0 0 2px rgba(37, 99, 235, 0.5))' }
+                      }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="h-96 flex items-center justify-center">
-                <div className="text-center">
+              <div className="h-64 sm:h-96 flex items-center justify-center">
+                <div className="text-center p-4">
                   <p className="text-gray-500 mb-4">No chart data available</p>
-                  <p className="text-sm text-gray-400">Data length: {stockData?.length || 0}</p>
-                  <Button onClick={() => fetchStockData(90)} className="mt-2">
+                  <Button 
+                    onClick={() => {
+                      const range = timeRanges.find(r => r.label === selectedRange) || timeRanges[2];
+                      fetchStockData(range.days);
+                    }} 
+                    className="w-full sm:w-auto"
+                  >
                     Reload Data
                   </Button>
                 </div>
