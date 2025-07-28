@@ -1,5 +1,5 @@
 import Component from "../nifty-dashboard"
-import { Head } from "next/document"
+import Head from "next/head"
 
 export default function Page() {
   return (
@@ -29,7 +29,7 @@ export default function Page() {
             "@type": "Organization",
             "name": "NiftyNiti",
             "url": "https://niftyniti.in",
-            "logo": "https://niftyniti.in/logo.png", // replace with actual logo URL
+            "logo": "https://niftyniti.in/logo.png", // update this
             "sameAs": [
               "https://twitter.com/yourhandle",
               "https://linkedin.com/in/yourhandle"
@@ -37,6 +37,7 @@ export default function Page() {
           })
         }} />
       </Head>
+
       <Component />
     </>
   )
