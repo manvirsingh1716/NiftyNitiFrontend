@@ -2,14 +2,17 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'NiftyNiti – AI-Powered NIFTY 50 Prediction & Analysis',
+  title: 'NiftyNiti | AI-Powered NIFTY 50 Prediction & Analysis',
   description: 'Predict NIFTY 50 movements using AI-powered tools. Get daily insights, charts, and future trends. Trusted by traders and analysts.',
   keywords: 'Nifty 50 prediction, stock market AI, niftyniti, stock trend forecast, nifty analysis',
   authors: [{ name: 'NiftyNiti Team' }],
   creator: 'NiftyNiti',
   publisher: 'NiftyNiti',
+  icons: {
+    icon: '/logo.svg',
+  },
   openGraph: {
-    title: 'NiftyNiti – AI-Powered NIFTY 50 Prediction & Analysis',
+    title: 'NiftyNiti | AI-Powered NIFTY 50 Prediction & Analysis',
     description: 'Predict NIFTY 50 movements using AI-powered tools. Get daily insights, charts, and future trends.',
     url: 'https://niftyniti.vercel.app',
     siteName: 'NiftyNiti',
@@ -18,7 +21,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'NiftyNiti – AI-Powered NIFTY 50 Prediction & Analysis',
+    title: 'NiftyNiti | AI-Powered NIFTY 50 Prediction & Analysis',
     description: 'Get AI-powered NIFTY 50 predictions and market analysis. Stay ahead in the stock market with our advanced forecasting tools.',
     creator: '@niftyniti',
   },

@@ -29,7 +29,7 @@ export default function Page() {
             "@type": "Organization",
             "name": "NiftyNiti",
             "url": "https://niftyniti.in",
-            "logo": "https://niftyniti.in/logo.png", // update this
+            "logo": `@/public/logo.svg`, // update this
             "sameAs": [
               "https://twitter.com/yourhandle",
               "https://linkedin.com/in/yourhandle"
