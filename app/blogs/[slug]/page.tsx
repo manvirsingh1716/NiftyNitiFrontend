@@ -13,7 +13,7 @@ interface BlogPost {
 }
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  const response = await fetch(`http://localhost:3000/api/blogs/${params.slug}`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/blogs/${params.slug}`, {
     next: { revalidate: 60 }, // Revalidate every 60 seconds
   });
   
@@ -83,7 +83,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const response = await fetch(`http://localhost:3000/api/blogs/${params.slug}`);
+  const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/blogs/${params.slug}`);
   
   if (!response.ok) {
     return {

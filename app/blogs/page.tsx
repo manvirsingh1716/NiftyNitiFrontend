@@ -11,7 +11,7 @@ interface BlogPost {
 }
 
 export default async function BlogPage() {
-  const response = await fetch(`http://localhost:3000/api/blogs`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/blogs`, {
     next: { revalidate: 60 }, // Revalidate every 60 seconds
   });
   
