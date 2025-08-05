@@ -1,5 +1,6 @@
 {
-  "name": "my-v0-project",
+  "name": "niftyniti",
+  "description": "AI-powered NIFTY 50 prediction and analysis platform",
   "version": "0.1.0",
   "private": true,
   "scripts": {

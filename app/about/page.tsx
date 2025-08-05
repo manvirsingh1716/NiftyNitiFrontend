@@ -41,7 +41,7 @@ export default function AboutPage() {
             ML Engineer &amp; Creator of NiftyNiti
           </p>
           <p className="mt-4 text-gray-700 leading-relaxed max-w-2xl">
-            I'm a passionate Machine Learning Engineer with expertise in building AI-powered solutions for financial markets. I specialize in predictive models that empower traders with actionable insights.
+            I'm a passionate Machine Learning Engineer with expertise in building AI-powered solutions.
           </p>
         </div>
 
@@ -49,10 +49,10 @@ export default function AboutPage() {
         <section className="mt-20">
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">My Journey</h2>
           <div className="space-y-6 max-w-3xl mx-auto text-gray-700 prose prose-blue">
-            <p><strong>Master's in Computer Science</strong> with focus on Machine Learning</p>
-            <p><strong>5+ years of experience</strong> in developing ML models for financial markets</p>
+            <p><strong>Bachelor of Technology in Computer Science</strong> with focus on Machine Learning</p>
+            <p><strong>1+ years of experience</strong> in developing ML models</p>
             <p><strong>Specialized</strong> in time series analysis and predictive modeling</p>
-            <p><strong>Passionate</strong> about making complex financial data accessible to everyone</p>
+            <p><strong>Passionate</strong> about making complex data accessible to everyone</p>
           </div>
         </section>
 

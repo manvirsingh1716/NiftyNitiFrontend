@@ -7,9 +7,9 @@ export const metadata: Metadata = {
   title: 'NiftyNiti | AI-Powered NIFTY 50 Prediction & Analysis',
   description: 'Predict NIFTY 50 movements using AI-powered tools. Get daily insights, charts, and future trends. Trusted by traders and analysts.',
   keywords: 'Nifty 50 prediction, stock market AI, niftyniti, stock trend forecast, nifty analysis',
-  authors: [{ name: 'NiftyNiti Team' }],
-  creator: 'NiftyNiti',
-  publisher: 'NiftyNiti',
+  authors: [{ name: 'Manvir Singh' }],
+  creator: 'Manvir Singh',
+  publisher: 'Manvir Singh',
   icons: {
     icon: '/logo.svg',
   },
@@ -50,6 +50,7 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
+        <title>NiftyNiti | AI-Powered NIFTY 50 Prediction & Analysis</title>
       </head>
       <body className="min-h-screen flex flex-col bg-gray-50">
         <Navbar />
