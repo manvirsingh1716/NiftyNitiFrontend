@@ -2,22 +2,43 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { Prisma } from '@prisma/client';
 
-export async function GET() {
+const POSTS_PER_PAGE = 10; // Default number of posts per page
+
+export async function GET(request: Request) {
   try {
-    const blogs = await prisma.blog.findMany({
-      where: { published: true },
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        excerpt: true,
-        readTime: true,
-        publishedAt: true,
+    const { searchParams } = new URL(request.url);
+    const skip = parseInt(searchParams.get('skip') || '0');
+    const take = parseInt(searchParams.get('take') || POSTS_PER_PAGE.toString());
+
+    const [blogs, total] = await Promise.all([
+      prisma.blog.findMany({
+        where: { published: true },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          readTime: true,
+          publishedAt: true,
+        },
+      }),
+      prisma.blog.count({
+        where: { published: true },
+      }),
+    ]);
+
+    return NextResponse.json({
+      data: blogs,
+      pagination: {
+        total,
+        skip,
+        take,
+        hasMore: skip + take < total,
       },
     });
-
-    return NextResponse.json(blogs);
   } catch (error) {
     console.error('Error fetching blogs:', error);
     return NextResponse.json(
